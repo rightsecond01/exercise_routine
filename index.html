@@ -388,7 +388,7 @@
 
             // html2canvas 라이브러리를 사용하여 DOM 요소를 이미지로 캡처
             html2canvas(shareableContent).then(canvas => {
-                const targetWidth = 400; // 원하는 너비
+                const targetWidth = 900; // 원하는 너비
                 const targetHeight = canvas.height * (targetWidth / canvas.width); // 비율 유지
 
                 const resizedCanvas = document.createElement('canvas');

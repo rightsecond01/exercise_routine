@@ -1,0 +1,681 @@
+body {
+    font-family: 'Noto Sans KR', sans-serif;
+    background-color: #f0f0f0;
+    color: #333;
+    margin: 0;
+    padding: 20px;
+}
+
+h1 {
+    font-family: '나눔고딕', sans-serif;
+    color: #333;
+    margin-bottom: 20px;
+}
+
+.routine-item {
+    border: 1px solid #ddd;
+    padding: 15px;
+    margin-bottom: 10px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    background-color: #fff;
+    border-radius: 5px;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+}
+
+.routine-name {
+    font-weight: bold;
+    margin-right: 10px;
+}
+
+.routine-actions button, .routine-edit-actions button {
+    margin-left: 5px;
+    padding: 10px 15px;
+    min-width: 70px;
+    min-height: 35px;
+    font-size: 1em;
+    border: none;
+    border-radius: 5px;
+    background-color: #007bff;
+    color: #fff;
+    cursor: pointer;
+}
+
+.routine-actions button:hover, .routine-edit-actions button:hover {
+    background-color: #0056b3;
+}
+
+#datetime {
+    margin-bottom: 20px;
+    font-size: 1.1em;
+}
+
+#newRoutineInput {
+    margin-top: 20px;
+    padding: 15px;
+    background-color: #fff;
+    border: 1px solid #ddd;
+    border-radius: 5px;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+#newRoutineInput h2 {
+    margin-top: 0;
+    margin-bottom: 15px;
+}
+
+#newRoutineInput label {
+    display: block;
+    margin-bottom: 5px;
+    font-weight: bold;
+}
+
+#newRoutineInput label[for="newRoutineName"] {
+    font-size: 1em;
+    margin-bottom: 5px;
+}
+
+#newRoutineInput input#newRoutineName {
+    padding: 14px;
+    margin-bottom: 15px;
+    font-size: 1.1em;
+    width: 100%;
+    box-sizing: border-box;
+}
+
+#exercisesContainer {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    margin-bottom: 15px;
+}
+
+.exercise-input-group {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+}
+
+.exercise-input-group label {
+    font-size: 0.9em;
+    width: 100%;
+    text-align: left;
+}
+
+.exercise-input-group input[type="text"],
+.exercise-input-group input[type="number"] {
+    padding: 12px;
+    font-size: 1em;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    width: 100%;
+    box-sizing: border-box;
+}
+
+#newRoutineInput button {
+    padding: 10px 15px;
+    border: none;
+    border-radius: 5px;
+    color: #fff;
+    cursor: pointer;
+    font-size: 1em;
+}
+
+#addExerciseButton {
+    padding: 14px 18px;
+    font-size: 1.1em;
+    width: 100%;
+    border: none;
+    border-radius: 5px;
+    background-color: #28a745;
+    color: #fff;
+    cursor: pointer;
+    margin-bottom: 15px;
+}
+
+#addExerciseButton:hover {
+    background-color: #1e7e34;
+}
+
+#newRoutineInput > div {
+    display: flex;
+    gap: 10px;
+    width: 100%;
+}
+
+#newRoutineInput > div > button {
+    padding: 14px 18px;
+    font-size: 1.1em;
+    border: none;
+    border-radius: 5px;
+    color: #fff;
+    cursor: pointer;
+    flex-grow: 1;
+}
+
+#newRoutineInput > div > button[onclick="saveNewRoutine()"] {
+    background-color: #007bff;
+}
+
+#newRoutineInput > div > button[onclick="saveNewRoutine()"]:hover {
+    background-color: #0056b3;
+}
+
+#newRoutineInput > div > button[onclick="hideAddRoutineInput()"] {
+    background-color: #6c757d;
+}
+
+#newRoutineInput > div > button[onclick="hideAddRoutineInput()"]:hover {
+    background-color: #545b62;
+}
+
+.edit-input {
+    padding: 8px;
+    margin-bottom: 5px;
+}
+
+.routine-edit-area {
+    display: none;
+    flex-direction: column;
+    gap: 10px;
+    margin-top: 10px;
+}
+
+.edit-exercises-container {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.edit-exercise-group {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.edit-exercise-group input[type="text"],
+.edit-exercise-group input[type="number"] {
+    padding: 8px;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    flex-grow: 1;
+    min-width: 0;
+}
+
+.exercise-input-group .remove-exercise-button {
+    padding: 8px 12px;
+    border: 1px solid #dc3545;
+    border-radius: 4px;
+    background-color: #f8d7da;
+    color: #dc3545;
+    cursor: pointer;
+    font-size: 0.9em;
+}
+
+.exercise-input-group .remove-exercise-button:hover {
+    background-color: #e74c3c;
+}
+
+.edit-exercise-group .remove-exercise-button {
+    padding: 8px 12px;
+    border: 1px solid #dc3545;
+    border-radius: 4px;
+    background-color: #f8d7da;
+    color: #dc3545;
+    cursor: pointer;
+    font-size: 0.9em;
+}
+
+.edit-exercise-group .remove-exercise-button:hover {
+    background-color: #e74c3c;
+}
+
+#addEditExerciseButton {
+    padding: 10px 15px;
+    border: none;
+    border-radius: 5px;
+    background-color: #28a745;
+    color: #fff;
+    cursor: pointer;
+    margin-top: 10px;
+}
+
+#addEditExerciseButton:hover {
+    background-color: #1e7e34;
+}
+
+.routine-edit-actions {
+    display: flex;
+    gap: 10px;
+    margin-top: 20px;
+    justify-content: flex-end;
+}
+
+.routine-edit-actions button {
+    padding: 10px 15px;
+    border: none;
+    border-radius: 5px;
+    color: #fff;
+    cursor: pointer;
+    font-size: 1em;
+    min-width: 80px;
+}
+
+.routine-edit-actions button:first-child {
+    background-color: #007bff;
+}
+
+.routine-edit-actions button:first-child:hover {
+    background-color: #0056b3;
+}
+
+.routine-edit-actions button:last-child {
+    background-color: #6c757d;
+}
+
+.routine-edit-actions button:last-child:hover {
+    background-color: #545b62;
+}
+
+.delete-button-container {
+    display: inline-block;
+    margin-left: 5px;
+}
+
+.exercise-separator {
+    width: 100%;
+    height: 1px;
+    background-color: #eee;
+    margin: 10px 0; /* 위아래 여백 조절 */
+}
+
+/* 모바일 화면 (최대 너비 768px) */
+@media (max-width: 768px) {
+    .exercise-separator {
+        width: 100%;
+        height: 1px;
+        background-color: #eee;
+        margin: 10px 0; /* 위아래 여백 조절 */
+    }
+    .routine-item {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+
+    .routine-name {
+        margin-bottom: 10px;
+        margin-right: 0;
+    }
+
+    .routine-actions {
+        display: flex;
+        gap: 8px;
+        margin-top: 10px;
+        width: 100%;
+        justify-content: flex-end;
+    }
+
+    .routine-actions button {
+        padding: 8px 12px;
+        min-width: auto;
+        font-size: 0.9em;
+    }
+
+    #newRoutineInput {
+        padding: 15px;
+        display: flex;
+        flex-direction: column;
+        gap: 15px; /* 간격 증가 */
+    }
+
+    #newRoutineInput h2 {
+        margin-bottom: 20px; /* 간격 증가 */
+    }
+
+    #newRoutineInput label[for="newRoutineName"] {
+        font-size: 1em;
+        margin-bottom: 8px; /* 간격 증가 */
+    }
+
+    #newRoutineInput input#newRoutineName {
+        padding: 12px;
+        margin-bottom: 20px; /* 간격 증가 */
+        font-size: 1.1em;
+        width: 100%;
+        box-sizing: border-box;
+        border: 1px solid #ccc; /* 테두리 추가 */
+        border-radius: 4px; /* 둥근 모서리 */
+    }
+
+    #exercisesContainer {
+        display: flex;
+        flex-direction: column;
+        gap: 12px; /* 간격 증가 */
+        margin-bottom: 20px; /* 간격 증가 */
+    }
+
+    .exercise-input-group {
+        display: flex;
+        flex-direction: column;
+        gap: 8px; /* 간격 조정 */
+        width: 100%;
+    }
+
+    .exercise-input-group label {
+        font-size: 0.9em;
+        width: 100%;
+        text-align: left;
+        margin-bottom: 5px; /* 간격 추가 */
+    }
+
+    .exercise-input-group input[type="text"],
+    .exercise-input-group input[type="number"] {
+        padding: 12px;
+        font-size: 1em;
+        border: 1px solid #ccc; /* 테두리 추가 */
+        border-radius: 4px; /* 둥근 모서리 */
+        width: 100%;
+        box-sizing: border-box;
+    }
+
+    #addExerciseButton {
+        padding: 14px 18px;
+        font-size: 1.1em;
+        width: 100%;
+        border: none;
+        border-radius: 5px;
+        background-color: #28a745;
+        color: #fff;
+        cursor: pointer;
+        margin-bottom: 20px; /* 간격 증가 */
+    }
+
+    #newRoutineInput > div {
+        display: flex;
+        gap: 10px;
+        width: 100%;
+    }
+
+    #newRoutineInput > div > button {
+        padding: 14px 18px;
+        font-size: 1.1em;
+        border: none;
+        border-radius: 5px;
+        color: #fff;
+        cursor: pointer;
+        flex-grow: 1;
+    }
+
+    #newRoutineInput > div > button[onclick="saveNewRoutine()"] {
+        background-color: #007bff;
+    }
+
+    #newRoutineInput > div > button[onclick="hideAddRoutineInput()"] {
+        background-color: #6c757d;
+    }
+
+    .edit-exercises-container {
+        display: flex;
+        flex-direction: column;
+        gap: 15px; /* 간격 조정 */
+    }
+
+    .edit-exercise-group {
+        display: flex;
+        flex-direction: column; /* 세로 배치 */
+        gap: 10px; /* 간격 조정 */
+        width: 100%;
+        background-color: #fff; /* 카드 배경색 */
+        border-radius: 8px; /* 카드 둥근 모서리 */
+        padding: 15px; /* 카드 내부 패딩 */
+        box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05); /* 카드 그림자 */
+        align-items: stretch; /* 내부 요소 가로로 늘리기 */
+    }
+
+    .edit-exercise-group label {
+        font-size: 0.95em;
+        width: 100%;
+        text-align: left;
+        margin-bottom: 5px;
+        color: #777;
+    }
+
+    .edit-exercise-group input[type="text"],
+    .edit-exercise-group input[type="number"] {
+        padding: 12px;
+        font-size: 1em;
+        border: 1px solid #eee; /* 연한 테두리 */
+        border-radius: 6px;
+        width: 100%;
+        box-sizing: border-box;
+        margin-bottom: 10px; /* 입력 필드 아래 간격 추가 */
+    }
+
+    .edit-exercise-group .remove-exercise-button {
+        padding: 12px 15px;
+        border: 1px solid #dc3545;
+        border-radius: 6px;
+        background-color: #f8d7da;
+        color: #dc3545;
+        cursor: pointer;
+        font-size: 1em;
+        width: 100%; /* 삭제 버튼 전체 너비 차지 */
+    }
+
+    .edit-exercise-group .remove-exercise-button:hover {
+        background-color: #e74c3c;
+        color: #fff;
+    }
+
+    #addEditExerciseButton {
+        padding: 16px 20px;
+        font-size: 1.1em;
+        width: 100%;
+        border: none;
+        border-radius: 8px;
+        background-color: #4CAF50; /* 녹색 강조 */
+        color: #fff;
+        cursor: pointer;
+        margin-top: 20px;
+        box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+    }
+
+
+    .exercise-input-group .remove-exercise-button {
+        padding: 12px 15px;
+        border: 1px solid #dc3545;
+        border-radius: 6px;
+        background-color: #f8d7da;
+        color: #dc3545;
+        cursor: pointer;
+        font-size: 1em;
+        width: 100%; /* 삭제 버튼 전체 너비 차지 */
+    }
+
+    .exercise-input-group .remove-exercise-button:hover {
+        background-color: #e74c3c;
+        color: #fff;
+    }
+}
+
+
+/* ... 기존 스타일 ... */
+
+/* workout.html 스타일 (기존 HTML 기반) */
+body {
+    font-family: sans-serif;
+    margin: 0;
+    padding: 20px;
+    background-color: #f4f4f4;
+    color: #333;
+}
+
+h1#routineTitle {
+    font-size: 1.8em;
+    margin-bottom: 20px;
+    text-align: center;
+    color: #555;
+}
+
+#workoutLog {
+    margin-bottom: 20px;
+}
+
+.workout-item {
+    margin-bottom: 20px;
+    padding: 15px;
+    background-color: #fff;
+    border-radius: 8px;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+}
+
+.workout-header {
+    font-size: 1.2em;
+    font-weight: bold;
+    margin-bottom: 10px;
+    color: #444;
+    padding: 8px;
+}
+
+.set-input-group {
+    display: flex;
+    flex-direction: column; /* 세로 배치 */
+    margin-bottom: 10px;
+    align-items: center;
+}
+
+.set-input-group label {
+    margin-bottom: 5px;
+    font-size: 0.9em;
+    color: #777;
+}
+
+.set-input-group > div { /* 무게, 횟수, 버튼을 가로로 묶음 */
+    display: flex;
+    align-items: center;
+}
+
+.set-input-group input[type="number"] {
+    width: 80px;
+    padding: 8px;
+    margin-right: 10px;
+    margin-bottom: 5px;
+    text-align: center;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    font-size: 1em;
+}
+
+.set-input-group button {
+    width: 35px;
+    height: 35px;
+    font-size: 1.2em;
+    border: none;
+    border-radius: 50%;
+    cursor: pointer;
+    color: #fff;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.set-input-group button:first-of-type { /* decrement button */
+    background-color: #28a745;
+    margin-right: 5px;
+}
+
+.set-input-group button:last-of-type { /* increment button */
+    background-color: #dc3545;
+    margin-left: 5px;
+}
+
+.workout-item > button {
+    padding: 12px 20px;
+    margin-top: 25px;
+    cursor: pointer;
+    border: none;
+    border-radius: 8px;
+    font-size: 1.1em;
+    background-color: #007bff;
+    color: #fff;
+    width: 100%;
+    box-sizing: border-box;
+}
+
+.workout-item > button:hover {
+    background-color: #0056b3;
+}
+
+#todayWorkoutLog {
+    margin-top: 30px;
+    padding: 25px;
+    border: 1px solid #ddd;
+    border-radius: 12px;
+    background-color: #fff;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+}
+
+#todayWorkoutLog h2 {
+    font-size: 1.8em;
+    margin-bottom: 20px;
+    color: #333;
+    text-align: center;
+    font-weight: 700;
+}
+
+#todayWorkoutDetails h3 {
+    font-size: 1.3em;
+    margin-top: 15px;
+    margin-bottom: 8px;
+    color: #555;
+    font-weight: 600;
+}
+
+#todayWorkoutDetails p {
+    font-size: 1.05em;
+    line-height: 1.7;
+    color: #666;
+    margin-bottom: 10px;
+}
+
+#todayWorkoutDetails p strong {
+    font-weight: 600;
+    color: #444;
+}
+
+#todayWorkoutDetails hr {
+    border: 0;
+    border-top: 1px solid #eee;
+    margin: 20px 0;
+}
+
+.share-preview-container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 20px;
+    background-color: #eee;
+    border-radius: 8px;
+    margin-top: 20px;
+}
+
+.share-preview-image {
+    max-width: 90%;
+    height: auto;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+    margin-bottom: 15px;
+}
+
+.share-download-link {
+    padding: 10px 20px;
+    background-color: #007bff;
+    color: white;
+    text-decoration: none;
+    border-radius: 5px;
+    font-size: 1em;
+}

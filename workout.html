@@ -1,0 +1,167 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>운동 기록</title>
+    <link rel="stylesheet" href="style.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;700&family=Nanum+Gothic&display=swap" rel="stylesheet">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+</head>
+<body>
+    <h1 id="routineTitle"></h1>
+    <div id="workoutLog">
+        </div>
+
+    <button onclick="finishWorkout()">운동 완료 및 저장</button>
+
+    <script>
+        // URL 파라미터에서 routineId 값을 가져오는 함수
+        function getQueryParam(name) {
+            const urlParams = new URLSearchParams(window.location.search);
+            return urlParams.get(name);
+        }
+
+        // Local Storage 키 이름
+        const WORKOUT_DATA_KEY_PREFIX = 'workout_data_';
+        const ROUTINES_KEY = 'user_routines';
+
+        // 운동 기록 저장 함수
+        function finishWorkout() {
+            const routineId = getQueryParam('routineId');
+            if (!routineId) {
+                alert('루틴 ID가 없습니다.');
+                return;
+            }
+
+            const now = new Date();
+            const year = now.getFullYear();
+            const month = String(now.getMonth() + 1).padStart(2, '0');
+            const day = String(now.getDate()).padStart(2, '0');
+            const currentDate = `${year}-${month}-${day}`;
+            const storageKey = `${WORKOUT_DATA_KEY_PREFIX}${routineId}_${currentDate}`;
+
+            const workoutData = [];
+            const workoutItems = document.querySelectorAll('#workoutLog .workout-item');
+            workoutItems.forEach(item => {
+                const exerciseName = item.dataset.exercise;
+                const setsData = [];
+                const setInputGroups = item.querySelectorAll('.set-input-group');
+                setInputGroups.forEach(group => {
+                    const weightInput = group.querySelector('input[id*="-weight-"]');
+                    const repsInput = group.querySelector('input[id*="-reps-"]');
+                    const setNumInput = group.querySelector('input[id*="-setnum-"]');
+                    if (weightInput && repsInput && setNumInput) {
+                        setsData.push({
+                            weight: weightInput.value,
+                            reps: repsInput.value,
+                            setNum: setNumInput.value
+                        });
+                    }
+                });
+                workoutData.push({ name: exerciseName, sets: setsData });
+            });
+
+            localStorage.setItem(storageKey, JSON.stringify(workoutData));
+            alert(`${routineId} (${currentDate}) 운동 기록이 저장되었습니다.`);
+            window.location.href = 'index.html'; // index.html로 이동
+        }
+
+        function incrementSet(inputElementId) {
+            const inputElement = document.getElementById(inputElementId);
+            if (inputElement) {
+                inputElement.value = parseInt(inputElement.value || 0) + 1;
+            }
+        }
+
+        function decrementSet(inputElementId) {
+            const inputElement = document.getElementById(inputElementId);
+            if (inputElement && parseInt(inputElement.value || 0) > 1) {
+                inputElement.value = parseInt(inputElement.value) - 1;
+            }
+        }
+
+        // 화면 로드 시 저장된 루틴 정보 불러와서 표시
+        window.onload = function() {
+            const routineId = getQueryParam('routineId');
+            if (routineId) {
+                const storedRoutinesString = localStorage.getItem(ROUTINES_KEY);
+                const storedRoutines = storedRoutinesString ? JSON.parse(storedRoutinesString) : [];
+                const currentRoutine = storedRoutines.find(routine => routine.id === routineId);
+
+                if (currentRoutine && currentRoutine.exercises) {
+                    document.getElementById('routineTitle').innerText = currentRoutine.name + ' 운동 기록';
+                    const workoutLog = document.getElementById('workoutLog');
+                    workoutLog.innerHTML = '';
+
+                    currentRoutine.exercises.forEach((exercise, index) => {
+                        const exerciseDiv = document.createElement('div');
+                        exerciseDiv.classList.add('workout-item');
+                        exerciseDiv.dataset.exercise = exercise.name.toLowerCase().replace(/ /g, '-');
+                        const setNumId = `${exerciseDiv.dataset.exercise}-setnum-1`;
+
+                        let exerciseHTML = `<div class="workout-header">${exercise.name}</div>`;
+                        exerciseHTML += `
+                            <div class="set-input-group">
+                                <label for="${exerciseDiv.dataset.exercise}-weight-1">무게:</label>
+                                <input type="number" id="${exerciseDiv.dataset.exercise}-weight-1" placeholder="kg" value="${exercise.initialWeight || ''}">
+                                <label for="${exerciseDiv.dataset.exercise}-reps-1">횟수:</label>
+                                <input type="number" id="${exerciseDiv.dataset.exercise}-reps-1" placeholder="회" value="${exercise.initialReps || ''}">
+                                <label for="${setNumId}">세트 수:</label>
+                                <div>
+                                    <button type="button" onclick="incrementSet('${setNumId}')">+</button>                                    
+                                    <input type="number" id="${setNumId}" placeholder="세트" value="1">
+                                    <button type="button" onclick="decrementSet('${setNumId}')">-</button>
+                                </div>    
+                            </div>
+                            <button onclick="addSet('${exerciseDiv.dataset.exercise}')">세트 추가</button>
+                        `;
+                        exerciseDiv.innerHTML = exerciseHTML;
+                        workoutLog.appendChild(exerciseDiv);
+                    });
+                } else {
+                    document.getElementById('routineTitle').innerText = '루틴 정보를 찾을 수 없습니다.';
+                }
+            } else {
+                document.getElementById('routineTitle').innerText = '선택된 루틴이 없습니다.';
+            }
+        };
+
+        function addSet(exerciseName) {
+            const exerciseDiv = document.querySelector(`.workout-item[data-exercise="${exerciseName}"]`);
+            if (exerciseDiv) {
+                const setInputGroups = exerciseDiv.querySelectorAll('.set-input-group');
+                const newSetIndex = setInputGroups.length + 1;
+                const newSetNumId = `${exerciseName}-setnum-${newSetIndex}`;
+                const newSetHTML = `
+                    <div class="set-input-group">
+                        <label for="${exerciseName}-weight-${newSetIndex}">무게:</label>
+                        <input type="number" id="${exerciseName}-weight-${newSetIndex}" placeholder="kg">
+                        <label for="${exerciseName}-reps-${newSetIndex}">횟수:</label>
+                        <input type="number" id="${exerciseName}-reps-${newSetIndex}" placeholder="회">
+                        <button type="button" onclick="incrementSet('${newSetNumId}')">+</button>
+                        <label for="${newSetNumId}">세트 수:</label>
+                        <input type="number" id="${newSetNumId}" placeholder="세트" value="1">
+                        <button type="button" onclick="decrementSet('${newSetNumId}')">-</button>
+                    </div>
+                `;
+
+                // 구분선 추가
+                const separator = document.createElement('div');
+                separator.classList.add('exercise-separator');
+
+                const addButton = exerciseDiv.querySelector('button[onclick^="addSet"]');
+
+                if (addButton) {
+                    exerciseDiv.insertBefore(separator, addButton);
+                    exerciseDiv.insertBefore(document.createRange().createContextualFragment(newSetHTML), addButton);
+                } else {
+                    // 혹시 "세트 추가" 버튼이 없는 경우를 대비하여 마지막에 추가
+                    exerciseDiv.appendChild(separator);
+                    exerciseDiv.appendChild(document.createRange().createContextualFragment(newSetHTML));
+                }
+            }
+        }
+    </script>
+</body>
+</html>

@@ -707,3 +707,78 @@ h1#routineTitle {
     cursor: grab;
     margin-right: 10px;
 }
+
+/* 기본 스타일 (데스크탑 우선) */
+#todayWorkoutEditArea {
+    display: none;
+    margin-top: 20px;
+    padding: 15px;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+}
+
+#todayExercisesContainer {
+    display: flex;
+    flex-direction: column; /* 기본적으로 세로 배치 */
+}
+
+.today-exercise-group {
+    border: 1px solid #eee;
+    padding: 10px;
+    margin-bottom: 10px;
+    border-radius: 3px;
+    display: flex; /* 데스크탑에서는 가로 배치 */
+    align-items: center;
+    flex-wrap: wrap; /* 내용이 넘치면 줄 바꿈 */
+}
+
+.today-exercise-group > div {
+    margin-right: 10px;
+    margin-bottom: 5px; /* 모바일에서 세로 간격 추가 */
+}
+
+.today-exercise-group > .drag-handle {
+    margin-right: 10px;
+}
+
+.today-exercise-actions button {
+    margin-left: 5px;
+}
+
+/* 모바일 스타일 (화면 너비 600px 이하) */
+@media (max-width: 600px) {
+    .today-exercise-group {
+        flex-direction: column; /* 모바일에서는 세로 배치 */
+        align-items: stretch; /* 내용에 맞춰 늘리기 */
+    }
+
+    .today-exercise-group > div {
+        margin-right: 0; /* 모바일에서 불필요한 오른쪽 간격 제거 */
+        margin-bottom: 10px; /* 모바일에서 세로 간격 확보 */
+        display: block; /* 각 div를 블록 요소로 만들어 전체 너비 차지 */
+    }
+
+    .today-exercise-group > .drag-handle {
+        margin-bottom: 10px; /* 드래그 핸들 아래 간격 추가 */
+    }
+
+    .today-exercise-group > div label {
+        display: block; /* 레이블을 블록 요소로 만들어 전체 너비 차지 및 아래 요소와 분리 */
+        margin-bottom: 5px;
+        font-weight: bold;
+    }
+
+    .today-exercise-group > div input[type="text"],
+    .today-exercise-group > div input[type="number"],
+    .today-exercise-group > div select {
+        width: 100%; /* 입력 필드와 셀렉트 박스를 부모 요소의 전체 너비 차지 */
+        padding: 8px;
+        box-sizing: border-box; /* 패딩과 테두리가 너비에 포함되도록 설정 */
+    }
+
+    .today-exercise-actions button {
+        width: 100%; /* 버튼을 전체 너비 차지 */
+        margin-bottom: 5px;
+        margin-left: 0;
+    }
+}

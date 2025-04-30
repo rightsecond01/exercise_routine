@@ -2,15 +2,32 @@
 <html>
 <head>
     <title>나의 운동 루틴</title>
-    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="style.css?v=1.0">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;700&family=Nanum+Gothic&display=swap" rel="stylesheet">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/Sortable/1.14.0/Sortable.min.js"></script>
+    <script>
+        const CURRENT_VERSION = '2.0'; // 현재 프로젝트 버전
+
+        window.onload = function() {
+            checkVersion();
+        };
+
+        function checkVersion() {
+            const storedVersion = localStorage.getItem('app_version');
+            if (storedVersion !== CURRENT_VERSION) {
+                console.log('버전이 업데이트되었습니다. 강제 새로고침합니다.');
+                localStorage.setItem('app_version', CURRENT_VERSION);
+                window.location.reload(true); // 강제 새로고침
+            }
+        }
+    </script>
 </head>
 <body>
-    <div id="datetime"></div>
     <h1>나의 운동 루틴</h1>
 
     <div id="routineListContainer">
@@ -25,8 +42,11 @@
             <div class="exercise-input-group">
                 <label for="exerciseName-1">운동 이름</label>
                 <input type="text" class="exercise-name" id="exerciseName-1" placeholder="운동 이름">
-                <label for="exerciseWeight-1">초기 무게 (kg)</label>
-                <input type="number" class="exercise-weight" id="exerciseWeight-1" placeholder="초기 무게 (kg)">
+                <label for="exerciseWeight-1">초기 무게</label>
+                <div style="display: flex; align-items: center;">
+                    <input type="number" class="exercise-weight" id="exerciseWeight-1" placeholder="초기 무게">
+                    <label style="margin-left: 10px;"><input type="checkbox" class="use-lbs"> 파운드 (LBS)</label>
+                </div>
                 <label for="exerciseReps-1">기본 횟수</label>
                 <input type="number" class="exercise-reps" id="exerciseReps-1" placeholder="기본 횟수">
             </div>
@@ -35,6 +55,17 @@
         <div>
             <button type="button" onclick="saveNewRoutine()">저장</button>
             <button type="button" onclick="hideAddRoutineInput()">취소</button>
+        </div>
+    </div>
+
+    <div id="todayWorkoutEditArea">
+        <h2>오늘의 운동 편집</h2>
+        <div id="todayExercisesContainer">
+            </div>
+        <button type="button" onclick="addTodayExerciseInput()">운동 추가</button>
+        <div>
+            <button type="button" onclick="startTodayWorkout()">운동 시작</button>
+            <button type="button" onclick="cancelTodayWorkoutEdit()">취소</button>
         </div>
     </div>
 
@@ -56,18 +87,6 @@
         const ROUTINES_KEY = 'user_routines';
         let currentlyEditingId = null;
         let editingRoutine = null;
-
-        function updateDateTime() {
-            const now = new Date();
-            const year = now.getFullYear();
-            const month = String(now.getMonth() + 1).padStart(2, '0');
-            const day = String(now.getDate()).padStart(2, '0');
-            const hour = String(now.getHours()).padStart(2, '0');
-            const minute = String(now.getMinutes()).padStart(2, '0');
-            const second = String(now.getSeconds()).padStart(2, '0');
-
-            datetimeDiv.textContent = `${year}-${month}-${day} ${hour}:${minute}:${second}`;
-        }
 
         function showAddRoutineInput() {
             newRoutineInputDiv.style.display = 'block';
@@ -95,8 +114,11 @@
             newExerciseInput.innerHTML = `
                 <label for="exerciseName-${index}">운동 이름</label>
                 <input type="text" class="exercise-name" id="exerciseName-${index}" placeholder="운동 이름">
-                <label for="exerciseWeight-${index}">초기 무게 (kg)</label>
-                <input type="number" class="exercise-weight" id="exerciseWeight-${index}" placeholder="초기 무게 (kg)">
+                <label for="exerciseWeight-${index}">초기 무게</label>
+                <div style="display: flex; align-items: center;">
+                    <input type="number" class="exercise-weight" id="exerciseWeight-${index}" placeholder="초기 무게">
+                    <label style="margin-left: 10px;"><input type="checkbox" class="use-lbs"> 파운드 (LBS)</label>
+                </div>
                 <label for="exerciseReps-${index}">기본 횟수</label>
                 <input type="number" class="exercise-reps" id="exerciseReps-${index}" placeholder="기본 횟수">
                 <button type="button" class="remove-exercise-button" onclick="removeExerciseInput(this)">행삭제</button>
@@ -120,11 +142,16 @@
                     const nameInput = inputGroup.querySelector('.exercise-name');
                     const weightInput = inputGroup.querySelector('.exercise-weight');
                     const repsInput = inputGroup.querySelector('.exercise-reps');
+                    const useLbsCheckbox = inputGroup.querySelector('.use-lbs');
+
                     if (nameInput.value.trim()) {
+                        let weight = parseFloat(weightInput.value) || '';
+                        const unit = useLbsCheckbox.checked ? 'lbs' : 'kg';
                         exercises.push({
                             name: nameInput.value.trim(),
-                            initialWeight: weightInput.value || '',
-                            initialReps: repsInput.value || ''
+                            initialWeight: weight,
+                            initialReps: repsInput.value || '',
+                            unit: unit
                         });
                     }
                 });
@@ -170,17 +197,22 @@
             if (!editingRoutine) return;
             const editedNameInput = document.getElementById(`editName-${routineId}`);
             const editedExercises = [];
-            const exerciseGroups = document.querySelectorAll(`#editExercises-${routineId} .edit-exercise-group`);
+            const exerciseGroups = document.querySelectorAll(`.edit-exercise-group`);
 
             exerciseGroups.forEach(group => {
                 const nameInput = group.querySelector('.edit-exercise-name');
                 const weightInput = group.querySelector('.edit-exercise-weight');
                 const repsInput = group.querySelector('.edit-exercise-reps');
+                const useLbsCheckbox = group.querySelector('.edit-use-lbs');
+
                 if (nameInput.value.trim()) {
+                    let weight = parseFloat(weightInput.value) || '';
+                    const unit = useLbsCheckbox.checked ? 'lbs' : 'kg';
                     editedExercises.push({
                         name: nameInput.value.trim(),
-                        initialWeight: weightInput.value || '',
-                        initialReps: repsInput.value || ''
+                        initialWeight: weight,
+                        initialReps: repsInput.value || '',
+                        unit: unit
                     });
                 }
             });
@@ -201,7 +233,7 @@
                 currentlyEditingId = null;
                 editingRoutine = null;
                 loadRoutines();
-            } else {
+            } else if(editedNameInput) {
                 const editedName = editedNameInput.value.trim();
                 const existingRoutinesString = localStorage.getItem(ROUTINES_KEY);
                 const existingRoutines = existingRoutinesString ? JSON.parse(existingRoutinesString) : [];
@@ -227,7 +259,10 @@
                 newExerciseInput.classList.add('edit-exercise-group');
                 newExerciseInput.innerHTML = `
                     <input type="text" class="edit-exercise-name" placeholder="운동 이름">
-                    <input type="number" class="edit-exercise-weight" placeholder="초기 무게 (kg)">
+                    <div style="display: flex; align-items: center;">
+                        <input type="number" class="edit-exercise-weight" placeholder="초기 무게">
+                        <label style="margin-left: 10px;"><input type="checkbox" class="edit-use-lbs"> 파운드 (LBS)</label>
+                    </div>
                     <input type="number" class="edit-exercise-reps" placeholder="기본 횟수">
                     <button type="button" class="remove-exercise-button" onclick="removeExerciseInput(this)">-</button>
                 `;
@@ -250,6 +285,134 @@
             button.parentNode.remove();
         }
 
+        /*****
+         * 2025-04-30 유연한 편집기능 관련 추가 코드 
+         */
+         const todayWorkoutEditArea = document.getElementById('todayWorkoutEditArea');
+        const todayExercisesContainer = document.getElementById('todayExercisesContainer');
+        const TODAY_WORKOUT_KEY_PREFIX = 'today_workout_';
+        let currentTodayWorkout = null; // 현재 편집 중인 오늘의 운동 데이터
+
+        // 루틴 시작 버튼 클릭 시 호출
+        function startRoutineForToday(routineId) {
+            const storedRoutines = JSON.parse(localStorage.getItem(ROUTINES_KEY) || '[]');
+            const selectedRoutine = storedRoutines.find(routine => routine.id === routineId);
+
+            if (selectedRoutine) {
+                // 오늘의 운동 임시 데이터 생성 (기존 루틴 복사)
+                currentTodayWorkout = {
+                    id: `${TODAY_WORKOUT_KEY_PREFIX}${routineId}_${new Date().toISOString().slice(0, 10)}`,
+                    name: `오늘의 운동 (${selectedRoutine.name})`,
+                    exercises: selectedRoutine.exercises.map(ex => ({ ...ex })) // 깊은 복사
+                };
+                localStorage.setItem(currentTodayWorkout.id, JSON.stringify(currentTodayWorkout));
+                loadTodayWorkoutEditView();
+            }
+        }
+
+        // 오늘의 운동 편집 화면 표시
+        function loadTodayWorkoutEditView() {
+            todayExercisesContainer.innerHTML = '';
+            if (currentTodayWorkout && currentTodayWorkout.exercises) {
+                currentTodayWorkout.exercises.forEach((exercise, index) => {
+                    const exerciseDiv = document.createElement('div');
+                    exerciseDiv.classList.add('today-exercise-group');
+                    exerciseDiv.innerHTML = `
+                        <span class="drag-handle"><i class="fas fa-arrows-alt-v"></i></span>
+                        <div>
+                            <label>운동 이름</label>
+                            <input type="text" value="${exercise.name}" onchange="updateTodayExercise(${index}, 'name', this.value)">
+                        </div>
+                        <div>
+                            <label>초기 무게</label>
+                            <input type="number" value="${exercise.initialWeight}" onchange="updateTodayExercise(${index}, 'initialWeight', this.value)">
+                        </div>
+                        <div>
+                            <label>기본 횟수</label>
+                            <input type="number" value="${exercise.initialReps}" onchange="updateTodayExercise(${index}, 'initialReps', this.value)">
+                        </div>
+                        <div>
+                            <label>단위</label>
+                            <select onchange="updateTodayExercise(${index}, 'unit', this.value)">
+                                <option value="kg" ${exercise.unit === 'kg' ? 'selected' : ''}>kg</option>
+                                <option value="lbs" ${exercise.unit === 'lbs' ? 'selected' : ''}>lbs</option>
+                            </select>
+                        </div>
+                        <div class="today-exercise-actions">
+                            <button type="button" onclick="removeTodayExercise(${index})">- 삭제</button>
+                        </div>
+                    `;
+                    todayExercisesContainer.appendChild(exerciseDiv);
+                });
+
+                // SortableJS 초기화
+                Sortable.create(todayExercisesContainer, {
+                    handle: '.drag-handle', // 드래그를 시작할 요소 지정 (여기서는 .drag-handle 클래스를 가진 span)
+                    animation: 150, // 정렬 시 애니메이션 속도 (ms)
+                    onEnd: function (evt) {
+                        const oldIndex = evt.oldIndex;
+                        const newIndex = evt.newIndex;
+
+                        // currentTodayWorkout.exercises 배열 순서 업데이트
+                        const movedItem = currentTodayWorkout.exercises.splice(oldIndex, 1)[0];
+                        currentTodayWorkout.exercises.splice(newIndex, 0, movedItem);
+
+                        // localStorage에 업데이트된 오늘의 운동 정보 저장
+                        localStorage.setItem(currentTodayWorkout.id, JSON.stringify(currentTodayWorkout));
+
+                        // UI는 이미 드래그 앤 드롭으로 변경되었으므로 loadTodayWorkoutEditView()를 다시 호출할 필요는 없습니다.
+                        // 필요하다면 추가적인 로직 (예: 순서 변경 알림)을 여기에 구현할 수 있습니다.
+                    }
+                });
+            }
+            todayWorkoutEditArea.style.display = 'block';
+        }
+
+        // 오늘의 운동에 새로운 운동 입력 필드 추가
+        function addTodayExerciseInput() {
+            if (currentTodayWorkout) {
+                currentTodayWorkout.exercises.push({ name: '', initialWeight: '', initialReps: '', unit: 'kg' });
+                localStorage.setItem(currentTodayWorkout.id, JSON.stringify(currentTodayWorkout));
+                loadTodayWorkoutEditView();
+            }
+        }
+
+        // 오늘의 운동 정보 업데이트
+        function updateTodayExercise(index, property, value) {
+            if (currentTodayWorkout && currentTodayWorkout.exercises[index]) {
+                currentTodayWorkout.exercises[index][property] = value;
+                localStorage.setItem(currentTodayWorkout.id, JSON.stringify(currentTodayWorkout));
+            }
+        }
+
+        // 오늘의 운동에서 특정 운동 제거
+        function removeTodayExercise(index) {
+            if (currentTodayWorkout && currentTodayWorkout.exercises) {
+                currentTodayWorkout.exercises.splice(index, 1);
+                localStorage.setItem(currentTodayWorkout.id, JSON.stringify(currentTodayWorkout));
+                loadTodayWorkoutEditView();
+            }
+        }
+
+        // 오늘의 운동 편집 취소
+        function cancelTodayWorkoutEdit() {
+            todayWorkoutEditArea.style.display = 'none';
+            currentTodayWorkout = null;
+        }
+
+        // 오늘의 운동 시작 (workout.html로 이동)
+        function startTodayWorkout() {
+            if (currentTodayWorkout) {
+                window.location.href = `workout.html?todayWorkoutId=${currentTodayWorkout.id}`;
+            } else {
+                alert('편집할 오늘의 운동이 없습니다.');
+            }
+        }
+        /********************************************
+         * 끝
+        */
+
+        /*
         function loadRoutines() {
             routineListContainer.innerHTML = '';
             const storedRoutinesString = localStorage.getItem(ROUTINES_KEY);
@@ -264,11 +427,14 @@
                     let editExercisesHTML = `<div class="edit-exercises-container">`;
                     editingRoutine.exercises.forEach((exercise, index) => {
                         editExercisesHTML += `
-                            <div class="exercise-input-group">
+                            <div class="edit-exercise-group">
                                 <label for="editExerciseName-${index}"><i class="fas fa-dumbbell"></i> 운동 이름</label>
                                 <input type="text" class="edit-exercise-name" id="editExerciseName-${index}" value="${exercise.name}" placeholder="운동 이름">
-                                <label for="editExerciseWeight-${index}"><i class="fas fa-weight-hanging"></i> 초기 무게 (kg)</label>
-                                <input type="number" class="edit-exercise-weight" id="editExerciseWeight-${index}" value="${exercise.initialWeight}" placeholder="초기 무게 (kg)">
+                                <label for="editExerciseWeight-${index}">초기 무게</label>
+                                <div style="display: flex; align-items: center;">
+                                    <input type="number" class="edit-exercise-weight" id="editExerciseWeight-${index}" value="${exercise.initialWeight}" placeholder="초기 무게">
+                                    <label style="margin-left: 10px;"><input type="checkbox" class="edit-use-lbs" ${exercise.unit === 'lbs' ? 'checked' : ''}> 파운드 (LBS)</label>
+                                </div>
                                 <label for="editExerciseReps-${index}"><i class="fas fa-sort-numeric-up"></i> 기본 횟수</label>
                                 <input type="number" class="edit-exercise-reps" id="editExerciseReps-${index}" value="${exercise.initialReps}" placeholder="기본 횟수">
                                 <button type="button" class="remove-exercise-button" onclick="removeExerciseInput(this)">-</button>
@@ -315,6 +481,35 @@
                 routineListContainer.appendChild(routineItem);
             });
         }
+            */
+        // 기존 루틴 목록 렌더링 함수 수정
+        function loadRoutines() {
+            routineListContainer.innerHTML = '';
+            const storedRoutines = JSON.parse(localStorage.getItem(ROUTINES_KEY) || '[]');
+
+            storedRoutines.forEach(routine => {
+                const routineItem = document.createElement('div');
+                routineItem.classList.add('routine-item');
+                routineItem.dataset.routineId = routine.id;
+
+                let exercisesText = routine.exercises.map(ex => ex.name + (ex.initialReps ? `(${ex.initialReps}회)` : '')).join(', ');
+                if (exercisesText.length > 30) {
+                    exercisesText = exercisesText.substring(0, 30) + '...';
+                }
+
+                routineItem.innerHTML = `
+                    <span class="routine-name">${routine.name} (${exercisesText})</span>
+                    <div class="routine-actions">
+                        <button onclick="editRoutine('${routine.id}')">수정</button>
+                        <button onclick="startRoutineForToday('${routine.id}')">시작</button>
+                        <div class="delete-button-container">
+                            <button onclick="deleteRoutine('${routine.id}')">삭제</button>
+                        </div>
+                    </div>
+                `;
+                routineListContainer.appendChild(routineItem);
+            });
+        }   
 
         const todayWorkoutDetailsContainer = document.getElementById('todayWorkoutDetails');
         const WORKOUT_DATA_KEY_PREFIX = 'workout_data_';
@@ -331,7 +526,7 @@
             const todayWorkoutLogs = [];
 
             keys.forEach(key => {
-                if (key.includes(`_${currentDate}`)) {
+                if (key.includes(`_${currentDate}_fin`)) {
                     const logData = localStorage.getItem(key);
                     if (logData) {
                         todayWorkoutLogs.push(JSON.parse(logData));
@@ -347,7 +542,7 @@
                 todayWorkoutLogs.forEach((workoutLog, index) => {
                     // 키 이름에서 routineId 추출
                     const parts = keys.find(key => localStorage.getItem(key) === JSON.stringify(workoutLog))?.split('_');
-                    const routineIdFromKey = parts ? parts[2] : null; // workout_data_{routineId}_YYYY-MM-DD
+                    const routineIdFromKey = parts ? parts[4] : null; // workout_data_{routineId}_YYYY-MM-DD
 
                     const currentRoutine = storedRoutines.find(routine => routine.id === routineIdFromKey);
                     const routineName = currentRoutine ? currentRoutine.name : '알 수 없는 루틴';
@@ -407,6 +602,22 @@
         }
 
         function displayShareOptions(imageDataURL) {
+            const shareableContent = document.getElementById('todayWorkoutDetails');
+            let shareHTML = '';
+            const workoutDetails = shareableContent.innerHTML;
+
+            const regex = /<h3>(.*?)<\/h3>([\s\S]*?)<hr>/g;
+            let match;
+
+            while ((match = regex.exec(workoutDetails)) !== null) {
+                const exerciseNameWithUnitMatch = match[1].match(/(.*?)\s*\((.*?)\)/);
+                const exerciseName = exerciseNameWithUnitMatch ? exerciseNameWithUnitMatch[1] : match[1];
+                const unit = exerciseNameWithUnitMatch ? exerciseNameWithUnitMatch[2] : 'kg';
+                const setsInfo = match[2].replace(/<strong>(.*?)<\/strong>:\s*([\d.-]+)\s*kg/g, `<strong>$1</strong>: $2 ${unit}`);
+
+                shareHTML += `<h3>${exerciseName} (${unit})</h3>${setsInfo}<hr>`;
+            }
+
             // 간단한 이미지 미리보기 및 다운로드 링크 제공
             const previewWindow = window.open('', '_blank');
             previewWindow.document.write(`
@@ -418,6 +629,7 @@
                     <div class="share-container">
                         <h1>오늘의 운동 기록</h1>
                         <img src="${imageDataURL}" alt="오늘의 운동 기록">
+                        <div class="workout-log-entry">${shareHTML}</div>
                         <a href="${imageDataURL}" download="오늘의_운동_기록.png">이미지 다운로드</a>
                     </div>
                 </body>
@@ -427,7 +639,6 @@
 
         // 페이지 로드 시 오늘의 운동 기록을 불러옵니다.
         window.onload = function() {
-            updateDateTime();
             loadRoutines();
             loadTodayWorkoutLog(); // 오늘의 운동 기록 로드
         };

@@ -679,3 +679,31 @@ h1#routineTitle {
     border-radius: 5px;
     font-size: 1em;
 }
+
+ /* 추가적인 스타일 (예시) */
+ #todayWorkoutEditArea {
+    display: none;
+    margin-top: 20px;
+    padding: 15px;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+}
+.today-exercise-group {
+    border: 1px solid #eee;
+    padding: 10px;
+    margin-bottom: 10px;
+    border-radius: 3px;
+    display: flex;
+    align-items: center;
+}
+.today-exercise-group > div {
+    flex-grow: 1;
+    margin-right: 10px;
+}
+.today-exercise-actions button {
+    margin-left: 5px;
+}
+.drag-handle {
+    cursor: grab;
+    margin-right: 10px;
+}

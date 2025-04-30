@@ -153,9 +153,27 @@
                 <label for="reps-${exerciseIndex}-${setNumber}">횟수</label>
                 <input type="number" id="reps-${exerciseIndex}-${setNumber}">
                 <label for="setNum-${exerciseIndex}-${setNumber}">세트 수</label>
-                <input type="number" id="setNum-${exerciseIndex}-${setNumber}" value="${setNumber}">
+                <div>
+                    <button type="button" onclick="incrementSet('setNum-${exerciseIndex}-${setNumber}')">+</button>                    
+                    <input type="number" id="setNum-${exerciseIndex}-${setNumber}" value="${setNumber}">
+                    <button type="button" onclick="decrementSet('setNum-${exerciseIndex}-${setNumber}')">-</button>
+                </div>
             `;
             setsContainer.appendChild(setInputGroup);
+        }
+
+        function incrementSet(inputElementId) {
+            const inputElement = document.getElementById(inputElementId);
+            if (inputElement) {
+                inputElement.value = parseInt(inputElement.value || 0) + 1;
+            }
+        }
+
+        function decrementSet(inputElementId) {
+            const inputElement = document.getElementById(inputElementId);
+            if (inputElement && parseInt(inputElement.value || 0) > 1) {
+                inputElement.value = parseInt(inputElement.value) - 1;
+            }
         }
 
         // 운동 기록 저장 (임시 - 실제로는 localStorage 등에 저장해야 함)
